@@ -2,43 +2,48 @@ package com.github.gianlucampos.springbootinvestsync.config;
 
 import com.github.gianlucampos.springbootinvestsync.exception.SheetsException;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.security.GeneralSecurityException;
-import java.util.Collections;
+import java.nio.charset.StandardCharsets;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Component
 public class SheetsFactory {
 
-    private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String APPLICATION_NAME = "Sheet-GoogleAPI";
 
-    @Value("${google.sheets.credentials-file}")
-    private String credentialsFilePath;
+    @Value("${google.sheets.credentials}")
+    private String credentialsJson;
 
-    public Sheets createSheetsService() throws GeneralSecurityException, IOException {
-        InputStream in = SheetsFactory.class.getResourceAsStream(credentialsFilePath);
-        if (in == null) {
-            throw new SheetsException("Credentials not found: " + credentialsFilePath);
+    public Sheets createSheetsService() {
+        try {
+            GoogleCredentials credentials = loadCredentials();
+
+            return new Sheets.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                GsonFactory.getDefaultInstance(),
+                new HttpCredentialsAdapter(credentials)
+            )
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+        } catch (Exception e) {
+            throw new SheetsException("Failed to create Sheets client", e);
         }
+    }
 
-        GoogleCredentials credentials = GoogleCredentials.fromStream(in)
-            .createScoped(Collections.singleton(SheetsScopes.SPREADSHEETS));
-
-        return new Sheets.Builder(
-            GoogleNetHttpTransport.newTrustedTransport(),
-            JSON_FACTORY,
-            new HttpCredentialsAdapter(credentials)
-        )
-            .setApplicationName(APPLICATION_NAME)
-            .build();
+    private GoogleCredentials loadCredentials() throws IOException {
+        if (!StringUtils.hasText(credentialsJson)) {
+            throw new SheetsException("Google Sheets credentials not set");
+        }
+        try (var inputStream = new ByteArrayInputStream(credentialsJson.getBytes(StandardCharsets.UTF_8))) {
+            return GoogleCredentials.fromStream(inputStream).createScoped(SheetsScopes.SPREADSHEETS);
+        }
     }
 }

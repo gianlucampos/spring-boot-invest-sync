@@ -7,7 +7,7 @@ spring:
 
 google:
   sheets:
-    credentials-file: ${GOOGLE_CREDENTIALS_PATH}
+    credentials: ${GOOGLE_SHEETS_CREDENTIALS}
 
 integrations:
   br-api:

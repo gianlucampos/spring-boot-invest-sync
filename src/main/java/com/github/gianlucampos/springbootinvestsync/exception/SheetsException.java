@@ -9,4 +9,8 @@ public class SheetsException extends RuntimeException{
     public SheetsException(String message) {
         super(message);
     }
+
+    public SheetsException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
