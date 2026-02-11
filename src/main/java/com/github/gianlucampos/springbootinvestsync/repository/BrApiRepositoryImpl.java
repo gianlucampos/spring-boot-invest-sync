@@ -1,5 +1,7 @@
 package com.github.gianlucampos.springbootinvestsync.repository;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.gianlucampos.springbootinvestsync.config.ApiIntegrationsProperties;
 import com.github.gianlucampos.springbootinvestsync.exception.StockApiException;
 import com.github.gianlucampos.springbootinvestsync.models.Ticker;
@@ -14,8 +16,6 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Repository
@@ -27,6 +27,7 @@ public class BrApiRepositoryImpl implements BrApiRepository {
     private final String token;
 
     public BrApiRepositoryImpl(ApiIntegrationsProperties props) {
+        log.info("APIs carregadas: {}", props.getApis());
         var brApi = props.get("br-api");
         this.baseUrl = brApi.getUrl();
         this.token = brApi.getToken();
@@ -54,7 +55,7 @@ public class BrApiRepositoryImpl implements BrApiRepository {
 
             var listOfTickers = StreamSupport.stream(results.spliterator(), false)
                 .map(item -> Ticker.builder()
-                    .symbol(item.get("symbol").asString())
+                    .symbol(item.get("symbol").asText())
                     .value(item.get("regularMarketPrice").decimalValue())
                     .build()
                 ).toList();

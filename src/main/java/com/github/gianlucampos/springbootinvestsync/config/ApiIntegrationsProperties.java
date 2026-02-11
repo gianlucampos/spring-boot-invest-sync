@@ -1,23 +1,27 @@
 package com.github.gianlucampos.springbootinvestsync.config;
 
-import com.github.gianlucampos.springbootinvestsync.config.ApiIntegrationsProperties.ApiProps;
 import java.util.HashMap;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 @Getter
 @Setter
-@Component
 @ConfigurationProperties(prefix = "integrations")
-public class ApiIntegrationsProperties extends HashMap<String, ApiProps> {
+public class ApiIntegrationsProperties {
+
+    private Map<String, ApiProps> apis = new HashMap<>();
 
     @Getter
     @Setter
     public static class ApiProps {
         private String url;
         private String token;
+    }
+
+    public ApiProps get(String key) {
+        return apis.get(key);
     }
 }
 

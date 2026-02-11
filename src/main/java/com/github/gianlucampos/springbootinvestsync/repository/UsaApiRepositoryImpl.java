@@ -1,5 +1,6 @@
 package com.github.gianlucampos.springbootinvestsync.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.gianlucampos.springbootinvestsync.config.ApiIntegrationsProperties;
 import com.github.gianlucampos.springbootinvestsync.exception.StockApiException;
 import com.github.gianlucampos.springbootinvestsync.models.Ticker;
@@ -13,7 +14,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
-import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Repository
@@ -47,7 +47,7 @@ public class UsaApiRepositoryImpl implements UsaApiRepository {
                     var root = mapper.readTree(response.body());
 
                     return Ticker.builder()
-                        .symbol(root.get("Ticker").asString())
+                        .symbol(root.get("Ticker").asText())
                         .value(BigDecimal.valueOf(root.get("Price").asDouble()))
                         .build();
 

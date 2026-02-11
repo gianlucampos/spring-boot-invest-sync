@@ -1,19 +1,16 @@
 spring:
   application:
     name: spring-boot-invest-sync
-  cloud:
-    function:
-      definition: updatePortfolio
 
 google:
   sheets:
     credentials: ${GOOGLE_SHEETS_CREDENTIALS}
 
 integrations:
-  br-api:
-    url: https://brapi.dev/api/quote/
-    token: ${BR_API_TOKEN}
-
-  usa-api:
-    url: https://stockprices.dev/api/stocks/
-    token:
+  apis:
+    br-api:
+      url: https://brapi.dev/api/quote/
+      token: ${BR_API_TOKEN}
+    usa-api:
+      url: https://stockprices.dev/api/stocks/
+      token:
