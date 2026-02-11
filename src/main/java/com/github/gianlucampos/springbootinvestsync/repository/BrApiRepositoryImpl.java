@@ -28,7 +28,7 @@ public class BrApiRepositoryImpl implements BrApiRepository {
 
     public BrApiRepositoryImpl(ApiIntegrationsProperties props) {
         log.info("APIs carregadas: {}", props.getApis());
-        var brApi = props.get("br-api");
+        var brApi = props.getApis().get("br-api");
         this.baseUrl = brApi.getUrl();
         this.token = brApi.getToken();
         this.mapper = new ObjectMapper();

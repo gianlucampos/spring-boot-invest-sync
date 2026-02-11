@@ -25,7 +25,7 @@ public class UsaApiRepositoryImpl implements UsaApiRepository {
 
 
     public UsaApiRepositoryImpl(ApiIntegrationsProperties props) {
-        var brApi = props.get("usa-api");
+        var brApi = props.getApis().get("usa-api");
         this.baseUrl = brApi.getUrl();
         this.mapper = new ObjectMapper();
         this.client = HttpClient.newBuilder()
