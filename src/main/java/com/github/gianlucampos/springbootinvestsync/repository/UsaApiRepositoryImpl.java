@@ -12,6 +12,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.naming.ServiceUnavailableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -44,11 +45,15 @@ public class UsaApiRepositoryImpl implements UsaApiRepository {
                         .build();
 
                     var response = client.send(request, BodyHandlers.ofString());
+                    if (response.statusCode() != 200) {
+                        log.error("Error at calling UsaApi: {}", response.body());
+                        throw new ServiceUnavailableException("Error at calling UsaApi: " + response.body());
+                    }
                     var root = mapper.readTree(response.body());
 
                     return Ticker.builder()
                         .symbol(root.get("Ticker").asText())
-                        .value(BigDecimal.valueOf(root.get("Price").asDouble()))
+                        .marketPrice(BigDecimal.valueOf(root.get("Price").asDouble()))
                         .build();
 
                 } catch (InterruptedException ex) {

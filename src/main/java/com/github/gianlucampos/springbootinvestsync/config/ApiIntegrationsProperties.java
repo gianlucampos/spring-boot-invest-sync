@@ -38,6 +38,4 @@ public class ApiIntegrationsProperties {
             apis.put("usa-api", usaApi);
         }
     }
-
 }
-

@@ -5,11 +5,13 @@ import static com.github.gianlucampos.springbootinvestsync.utils.UtilConstants.R
 import static com.github.gianlucampos.springbootinvestsync.utils.UtilConstants.STOCKS_RANGE;
 
 import com.github.gianlucampos.springbootinvestsync.models.Ticker;
+import com.github.gianlucampos.springbootinvestsync.models.TickerTypeEnum;
 import com.github.gianlucampos.springbootinvestsync.provider.HoldingsProvider;
 import com.github.gianlucampos.springbootinvestsync.repository.BrApiRepository;
 import com.github.gianlucampos.springbootinvestsync.repository.UsaApiRepository;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +25,12 @@ public class PortfolioSyncService {
     private final SheetsService sheetsService;
     private final BrApiRepository brApiRepository;
     private final UsaApiRepository usaApiRepository;
+    private final HoldingsProvider holdingsProviderMock;
 
     public void updateAll() {
-        updateHoldings(HoldingsProvider.fiis(), FIIS_RANGE);
-        updateHoldings(HoldingsProvider.stocks(), STOCKS_RANGE);
-        updateHoldings(HoldingsProvider.reits(), REITS_RANGE);
+        updateHoldings(holdingsProviderMock.getTickerByGroup(TickerTypeEnum.FII), FIIS_RANGE);
+        updateHoldings(holdingsProviderMock.getTickerByGroup(TickerTypeEnum.STOCK), STOCKS_RANGE);
+        updateHoldings(holdingsProviderMock.getTickerByGroup(TickerTypeEnum.REIT), REITS_RANGE);
     }
 
     public void updateHoldings(List<Ticker> myHoldings, String holdingsRange) {
@@ -37,18 +40,18 @@ public class PortfolioSyncService {
             default -> throw new IllegalArgumentException("Unkown range: " + holdingsRange);
         };
 
-        var symbols = myHoldings.stream()
+        List<String> symbols = myHoldings.stream()
             .map(Ticker::getSymbol)
             .toList();
 
-        var pricesBySymbol = apiRepository.getTickersFromList(symbols)
+        Map<String, BigDecimal> pricesBySymbol = apiRepository.getTickersFromList(symbols)
             .stream()
             .collect(Collectors.toMap(
                 Ticker::getSymbol,
-                Ticker::getValue
+                Ticker::getMarketPrice
             ));
 
-        var total = myHoldings.stream()
+        BigDecimal total = myHoldings.stream()
             .map(holding -> pricesBySymbol.get(holding.getSymbol())
                 .multiply(BigDecimal.valueOf(holding.getQuantity())))
             .reduce(BigDecimal.ZERO, BigDecimal::add);

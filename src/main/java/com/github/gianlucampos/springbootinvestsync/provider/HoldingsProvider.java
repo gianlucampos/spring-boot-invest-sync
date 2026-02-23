@@ -1,42 +1,42 @@
 package com.github.gianlucampos.springbootinvestsync.provider;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.gianlucampos.springbootinvestsync.exception.HoldingsProviderException;
 import com.github.gianlucampos.springbootinvestsync.models.Ticker;
+import com.github.gianlucampos.springbootinvestsync.models.TickerTypeEnum;
+import java.util.Arrays;
 import java.util.List;
+import org.springframework.stereotype.Component;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
+@Component
 public class HoldingsProvider {
 
-    public static List<Ticker> fiis() {
-        return List.of(
-            new Ticker("FIIB11", null, 11.0),
-            new Ticker("HGLG11", null, 45.0),
-            new Ticker("IRIM11", null, 238.0),
-            new Ticker("MXRF11", null, 665.0),
-            new Ticker("PVBI11", null, 63.0),
-            new Ticker("VISC11", null, 46.0),
-            new Ticker("XPLG11", null, 52.0)
-        );
+    private final List<Ticker> tickers;
+
+    public HoldingsProvider(String bucket, String objectKey) {
+        try (S3Client s3 = S3Client.create()) {
+            GetObjectRequest request = GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(objectKey)
+                .build();
+
+            String jsonData = s3.getObjectAsBytes(request).asUtf8String();
+            if (jsonData == null || jsonData.isBlank()) {
+                throw new HoldingsProviderException("Datasource is empty");
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            tickers = Arrays.asList(mapper.readValue(jsonData, Ticker[].class));
+        } catch (JsonProcessingException e) {
+            throw new HoldingsProviderException("Error at gathering data from Datasource", e);
+        }
     }
 
-    public static List<Ticker> stocks() {
-        return List.of(
-            new Ticker("WEGE3", null, 267.0),
-            new Ticker("TAEE3", null, 570.0),
-            new Ticker("VALE3", null, 95.0),
-            new Ticker("ABEV3", null, 535.0),
-            new Ticker("B3SA3", null, 330.0),
-            new Ticker("ITSA4", null, 415.0),
-            new Ticker("PSSA3", null, 110.0),
-            new Ticker("QUAL3", null, 100.0)
-        );
-    }
-
-    public static List<Ticker> reits() {
-        return List.of(
-            new Ticker("GOOD", null, 138.74188827),
-            new Ticker("STAG", null, 26.79011551),
-            new Ticker("AVB", null, 4.48415412),
-            new Ticker("EQIX", null, 0.21650201),
-            new Ticker("AGNC", null, 41.95688748)
-        );
+    public List<Ticker> getTickerByGroup(TickerTypeEnum tickerGroup) {
+        return tickers.stream()
+            .filter(t -> t.getTickerType() == tickerGroup)
+            .toList();
     }
 }

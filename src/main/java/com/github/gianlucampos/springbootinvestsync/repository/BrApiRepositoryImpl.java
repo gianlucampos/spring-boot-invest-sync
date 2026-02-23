@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import javax.naming.ServiceUnavailableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -26,8 +27,8 @@ public class BrApiRepositoryImpl implements BrApiRepository {
     private final String baseUrl;
     private final String token;
 
+    //TODO capar fora essa classe e injetar @Value no baseUrl e token
     public BrApiRepositoryImpl(ApiIntegrationsProperties props) {
-        log.info("APIs carregadas: {}", props.getApis());
         var brApi = props.getApis().get("br-api");
         this.baseUrl = brApi.getUrl();
         this.token = brApi.getToken();
@@ -49,6 +50,10 @@ public class BrApiRepositoryImpl implements BrApiRepository {
                 .build();
 
             HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                log.error("Error at calling UsaApi: {}", response.body());
+                throw new ServiceUnavailableException("Error at calling BrApi: " + response.body());
+            }
 
             JsonNode root = mapper.readTree(response.body());
             JsonNode results = root.path("results");
@@ -56,7 +61,7 @@ public class BrApiRepositoryImpl implements BrApiRepository {
             var listOfTickers = StreamSupport.stream(results.spliterator(), false)
                 .map(item -> Ticker.builder()
                     .symbol(item.get("symbol").asText())
-                    .value(item.get("regularMarketPrice").decimalValue())
+                    .marketPrice(item.get("regularMarketPrice").decimalValue())
                     .build()
                 ).toList();
 

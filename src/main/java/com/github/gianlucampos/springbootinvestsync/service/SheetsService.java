@@ -1,5 +1,7 @@
 package com.github.gianlucampos.springbootinvestsync.service;
 
+import static com.github.gianlucampos.springbootinvestsync.utils.UtilConstants.SPREADSHEET_ID;
+
 import com.github.gianlucampos.springbootinvestsync.exception.SheetsException;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
@@ -17,7 +19,6 @@ public class SheetsService {
 
     public static final String MAJOR_DIMENSION = "COLUMNS";
     public static final String VALUE_INPUT_OPTION = "USER_ENTERED";
-    private static final String SPREADSHEET_ID = "18mN_cZpjXXc5ubbiZVocn_40a07kWEXsWRPcm1l91sc";
 
     private final Sheets sheets;
 
