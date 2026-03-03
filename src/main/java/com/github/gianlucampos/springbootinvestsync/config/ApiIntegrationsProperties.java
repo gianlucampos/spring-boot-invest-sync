@@ -35,6 +35,7 @@ public class ApiIntegrationsProperties {
         if (usaApi == null) {
             usaApi = new ApiProps();
             usaApi.setUrl(System.getenv("USA_API_URL"));
+            usaApi.setUrl(System.getenv("USA_API_TOKEN"));
             apis.put("usa-api", usaApi);
         }
     }

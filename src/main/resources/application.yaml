@@ -9,8 +9,8 @@ google:
 integrations:
   apis:
     br-api:
-      url: https://brapi.dev/api/quote/
+      url: ${BR_API_URL}
       token: ${BR_API_TOKEN}
     usa-api:
-      url: https://stockprices.dev/api/stocks/
-      token:
+      url: ${USA_API_URL}
+      token: ${USA_API_TOKEN}
