@@ -27,9 +27,9 @@ public class BrApiRepositoryImpl implements BrApiRepository {
 
     //TODO capar fora essa classe e injetar @Value no baseUrl e token
     public BrApiRepositoryImpl(ApiIntegrationsProperties props) {
-        var brApi = props.getApis().get("br-api");
-        this.baseUrl = brApi.getUrl();
-        this.token = brApi.getToken();
+        var api = props.getApis().get("br-api");
+        this.baseUrl = api.getUrl();
+        this.token = api.getToken();
         this.mapper = new ObjectMapper();
         this.client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))

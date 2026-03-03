@@ -25,12 +25,12 @@ public class PortfolioSyncService {
     private final SheetsService sheetsService;
     private final BrApiRepository brApiRepository;
     private final UsaApiRepository usaApiRepository;
-    private final HoldingsProvider holdingsProviderMock;
+    private final HoldingsProvider holdingsProvider;
 
     public void updateAll() {
-        updateHoldings(holdingsProviderMock.getTickerByGroup(TickerTypeEnum.FII), FIIS_RANGE);
-        updateHoldings(holdingsProviderMock.getTickerByGroup(TickerTypeEnum.STOCK), STOCKS_RANGE);
-        updateHoldings(holdingsProviderMock.getTickerByGroup(TickerTypeEnum.REIT), REITS_RANGE);
+        updateHoldings(holdingsProvider.getTickerByGroup(TickerTypeEnum.FII), FIIS_RANGE);
+        updateHoldings(holdingsProvider.getTickerByGroup(TickerTypeEnum.STOCK), STOCKS_RANGE);
+        updateHoldings(holdingsProvider.getTickerByGroup(TickerTypeEnum.REIT), REITS_RANGE);
     }
 
     public void updateHoldings(List<Ticker> myHoldings, String holdingsRange) {
@@ -56,7 +56,6 @@ public class PortfolioSyncService {
                 .multiply(BigDecimal.valueOf(holding.getQuantity())))
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        log.info("Total: {}", total);
         sheetsService.updateSheet(total.toString(), holdingsRange);
     }
 

@@ -11,7 +11,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.naming.ServiceUnavailableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -26,9 +25,9 @@ public class UsaApiRepositoryImpl implements UsaApiRepository {
     private final String token;
 
     public UsaApiRepositoryImpl(ApiIntegrationsProperties props) {
-        var brApi = props.getApis().get("usa-api");
-        this.baseUrl = brApi.getUrl();
-        this.token = brApi.getToken();
+        var api = props.getApis().get("usa-api");
+        this.baseUrl = api.getUrl();
+        this.token = api.getToken();
         this.mapper = new ObjectMapper();
         this.client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
@@ -36,7 +35,7 @@ public class UsaApiRepositoryImpl implements UsaApiRepository {
     }
 
     public List<Ticker> getTickersFromList(List<String> tickersForSearch) {
-        var listOfTickers = tickersForSearch.parallelStream()
+        return tickersForSearch.parallelStream()
             .map(symbol -> {
                 try {
                     String symbolQuery = "?symbol=".concat(symbol);
@@ -71,11 +70,5 @@ public class UsaApiRepositoryImpl implements UsaApiRepository {
                 }
             })
             .toList();
-
-        log.info("\nList of tickers:\n{}", listOfTickers.stream()
-            .map(Ticker::toString)
-            .collect(Collectors.joining("\n"))
-        );
-        return listOfTickers;
     }
 }
